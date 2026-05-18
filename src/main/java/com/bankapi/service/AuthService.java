@@ -79,21 +79,33 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+        try {
+            log.debug("Tentativa de login para email={}", request.getEmail());
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BusinessException("Usuário não encontrado"));
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+            log.debug("Autenticação bem-sucedida para email={}", request.getEmail());
 
-        String token = jwtService.generateToken(user);
+            User user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new BusinessException("Usuário não encontrado"));
+            log.debug("Usuário encontrado: id={}", user.getId());
 
-        return AuthResponse.builder()
-                .token(token)
-                .type("Bearer")
-                .email(user.getEmail())
-                .name(user.getName())
-                .build();
+            String token = jwtService.generateToken(user);
+            log.debug("Token JWT gerado com sucesso para email={}", user.getEmail());
+
+            return AuthResponse.builder()
+                    .token(token)
+                    .type("Bearer")
+                    .email(user.getEmail())
+                    .name(user.getName())
+                    .build();
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Erro no login: ", e);
+            throw e;
+        }
     }
 
     private String generateAccountNumber() {
