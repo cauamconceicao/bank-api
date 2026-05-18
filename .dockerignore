@@ -1,0 +1,24 @@
+# Build output
+target/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# Maven wrapper (não necessário na imagem)
+.mvn/
+
+# Subprojeto separado (não faz parte do build)
+bankapi/
+
+# Documentação e outros arquivos desnecessários
+*.md
+*.txt
+Dockerfile
+.dockerignore
