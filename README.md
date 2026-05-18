@@ -2,6 +2,8 @@
 
 API REST de banco digital desenvolvida em Java com Spring Boot 3.5.
 
+🔗 **[API em produção](https://bank-api-oj8n.onrender.com)**
+
 ---
 
 ## ✨ Funcionalidades
@@ -26,6 +28,8 @@ API REST de banco digital desenvolvida em Java com Spring Boot 3.5.
 | [Neon](https://neon.tech/) | Hospedagem do banco |
 | [JWT](https://jwt.io/) | Tokens de autenticação |
 | [Lombok](https://projectlombok.org/) | Redução de boilerplate |
+| [Docker](https://www.docker.com/) | Containerização |
+| [Render](https://render.com/) | Deploy |
 | [Maven](https://maven.apache.org/) | Gerenciamento de dependências |
 
 ---
@@ -51,6 +55,7 @@ Configure o `src/main/resources/application.properties` com suas credenciais:
 spring.datasource.url=jdbc:postgresql://SEU_HOST/SEU_BANCO?sslmode=require
 spring.datasource.username=SEU_USUARIO
 spring.datasource.password=SUA_SENHA
+jwt.secret=SUA_CHAVE_BASE64_384_BITS
 ```
 
 ```bash
@@ -101,10 +106,10 @@ Authorization: Bearer {seu_token}
 ### Registro
 
 ```json
-POST /api/auth/register
+POST https://bank-api-oj8n.onrender.com/api/auth/register
 {
   "name": "Cauã",
-  "email": "cauamartins2005@gmail.com",
+  "email": "seu@email.com",
   "password": "123456",
   "cpf": "12345678900"
 }
@@ -113,9 +118,9 @@ POST /api/auth/register
 ### Login
 
 ```json
-POST /api/auth/login
+POST https://bank-api-oj8n.onrender.com/api/auth/login
 {
-  "email": "cauamartins2005@gmail.com",
+  "email": "seu@email.com",
   "password": "123456"
 }
 ```
@@ -123,7 +128,7 @@ POST /api/auth/login
 ### Depósito
 
 ```json
-POST /api/transactions/deposit
+POST https://bank-api-oj8n.onrender.com/api/transactions/deposit
 Authorization: Bearer {token}
 
 {
@@ -135,7 +140,7 @@ Authorization: Bearer {token}
 ### Transferência
 
 ```json
-POST /api/transactions/transfer
+POST https://bank-api-oj8n.onrender.com/api/transactions/transfer
 Authorization: Bearer {token}
 
 {
@@ -159,6 +164,7 @@ bank-api/
 │   ├── dto/              # Objetos de transferência
 │   ├── security/         # JWT e Spring Security
 │   └── exception/        # Tratamento de erros
+├── Dockerfile            # Containerização
 └── src/main/resources/
     └── application.properties
 ```
