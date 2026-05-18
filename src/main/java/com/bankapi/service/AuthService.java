@@ -10,6 +10,7 @@ import com.bankapi.repository.AccountRepository;
 import com.bankapi.repository.UserRepository;
 import com.bankapi.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -31,39 +33,49 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BusinessException("Email já cadastrado");
+        try {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new BusinessException("Email já cadastrado");
+            }
+            if (userRepository.existsByCpf(request.getCpf())) {
+                throw new BusinessException("CPF já cadastrado");
+            }
+
+            User user = User.builder()
+                    .name(request.getName())
+                    .email(request.getEmail())
+                    .cpf(request.getCpf())
+                    .password(passwordEncoder.encode(request.getPassword()))
+                    .build();
+
+            userRepository.save(user);
+            log.debug("Usuário salvo com id={}", user.getId());
+
+            Account account = Account.builder()
+                    .accountNumber(generateAccountNumber())
+                    .agency("0001")
+                    .balance(BigDecimal.ZERO)
+                    .user(user)
+                    .build();
+
+            accountRepository.save(account);
+            log.debug("Conta criada: número={}", account.getAccountNumber());
+
+            String token = jwtService.generateToken(user);
+            log.debug("Token JWT gerado com sucesso para email={}", user.getEmail());
+
+            return AuthResponse.builder()
+                    .token(token)
+                    .type("Bearer")
+                    .email(user.getEmail())
+                    .name(user.getName())
+                    .build();
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Erro no registro: ", e);
+            throw e;
         }
-        if (userRepository.existsByCpf(request.getCpf())) {
-            throw new BusinessException("CPF já cadastrado");
-        }
-
-        User user = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .cpf(request.getCpf())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .build();
-
-        userRepository.save(user);
-
-        Account account = Account.builder()
-                .accountNumber(generateAccountNumber())
-                .agency("0001")
-                .balance(BigDecimal.ZERO)
-                .user(user)
-                .build();
-
-        accountRepository.save(account);
-
-        String token = jwtService.generateToken(user);
-
-        return AuthResponse.builder()
-                .token(token)
-                .type("Bearer")
-                .email(user.getEmail())
-                .name(user.getName())
-                .build();
     }
 
     public AuthResponse login(LoginRequest request) {
